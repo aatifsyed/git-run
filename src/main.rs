@@ -10,9 +10,16 @@ use std::{
 };
 
 #[derive(Debug, clap::Parser)]
+#[command(about)]
 struct Args {
+    /// Run COMMAND in a shell, specified by the SHELL environment variable.
+    ///
+    /// There must be only one argument.
     #[arg(short, long)]
     shell: bool,
+    /// The command and its arguments.
+    ///
+    /// The commit message will be `run: [COMMAND]...`.
     #[arg(num_args(1..))]
     command: Vec<String>,
 }
