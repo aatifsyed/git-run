@@ -49,7 +49,9 @@ fn main() -> anyhow::Result<()> {
                     bail!("--shell was specified, but the environment variable SHELL is not set")
                 }
             };
-            errexit(run(visible(Command::new(shell).arg("-c").arg(arg)))?)?;
+            errexit(run(visible(
+                Command::new(shell).arg("-i").arg("-c").arg(arg),
+            ))?)?;
             format!("run: {arg}")
         }
         (true, _) => Args::command()
