@@ -17,6 +17,9 @@ struct Args {
     /// There must be only one argument.
     #[arg(short, long)]
     shell: bool,
+    /// Don't prompt for confirmation before committing.
+    #[arg(short, long, alias = "no-confirm")]
+    yes: bool,
     /// The command and its arguments.
     ///
     /// The commit message will be `run: [COMMAND]...`.
@@ -69,11 +72,12 @@ fn main() -> anyhow::Result<()> {
         "status",
     ])))?)?;
 
-    let permission = dialoguer::Confirm::new()
-        .default(true)
-        .with_prompt(format!("commit with message `{message}`"))
-        .interact()
-        .unwrap_or(false);
+    let permission = args.yes
+        || dialoguer::Confirm::new()
+            .default(true)
+            .with_prompt(format!("commit with message `{message}`"))
+            .interact()
+            .unwrap_or(false);
 
     match permission {
         true => errexit(run(visible(git().args([
