@@ -1,10 +1,6 @@
 use anyhow::{bail, Context};
 use clap::{error::ErrorKind, CommandFactory, Parser as _};
 use std::{
-    env::{
-        self,
-        VarError::{NotPresent, NotUnicode},
-    },
     ffi::OsString,
     process::{Command, Output, Stdio},
 };
@@ -12,9 +8,10 @@ use std::{
 #[derive(Debug, clap::Parser)]
 #[command(about)]
 struct Args {
-    /// Run COMMAND in a shell, specified by the SHELL environment variable.
+    /// Run COMMAND in a bash shell.
     ///
     /// There must be only one argument.
+    /// Bash is invoked with `-O globstar`.
     #[arg(short, long)]
     shell: bool,
     /// Don't prompt for confirmation before committing.
@@ -42,15 +39,11 @@ fn main() -> anyhow::Result<()> {
 
     let message = match (args.shell, args.command.as_slice()) {
         (true, [arg]) => {
-            let shell = match env::var("SHELL") {
-                Ok(s) => OsString::from(s),
-                Err(NotUnicode(s)) => s,
-                Err(NotPresent) => {
-                    bail!("--shell was specified, but the environment variable SHELL is not set")
-                }
-            };
             errexit(run(visible(
-                Command::new(shell).arg("-i").arg("-c").arg(arg),
+                Command::new("bash")
+                    .args(["-O", "globstar"])
+                    .arg("-c")
+                    .arg(arg),
             ))?)?;
             format!("run: {arg}")
         }
